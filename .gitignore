@@ -4,3 +4,9 @@ __pycache__/
 styleedit/
 version.md
 wordlist - 副本.db
+phonetic.py
+echart/
+frontend/
+dist/
+test.py
+WordMem.exe

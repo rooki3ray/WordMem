@@ -24,7 +24,7 @@ class wordlist:
             self.read_wordlist_from_file()
             self.create_sql()
         else:
-            self.read_from_sql(dbname)
+            self.read_from_sql()
         self.sort_by_alphabet()
         self.arrange_todaylist()
         self.nextword()
@@ -82,8 +82,8 @@ class wordlist:
                 print(word.enWord, word.phonetic)
         db.close()
 
-    def read_from_sql(self, db_name):
-        db = sqlite3.connect(db_name)
+    def read_from_sql(self):
+        db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
         r = cursor.execute("""SELECT * FROM wordlist""")
         result = r.fetchall()
@@ -133,9 +133,9 @@ class wordlist:
         try:
             self.thisword = np.random.choice(self.todayunknownList, size=1, replace=False, p=None)[0]
         except ValueError:
-            return False
-        else:
             return True
+        else:
+            return False
 
     def IRemember(self):
         self.thisword.testedCount += 1
@@ -228,7 +228,7 @@ class wordlist:
 
     def fuzzsearch(self, en_word):
         try:
-            db = sqlite3.connect(self.db_name)
+            db = sqlite3.connect(self.dbname)
         except AttributeError:
             db = sqlite3.connect(os.path.join(sys.path[0], 'wordlist.db'))
         cursor = db.cursor()

@@ -129,8 +129,10 @@ class MainWindow(QtWidgets.QDialog):
         self.hide()  # 隐藏窗体
 
     def quit(self):
-        if self.tipWindow:
+        try:
             self.tipWindow.flag=False
+        except AttributeError:
+            pass
         app.exit()
          
     def iconActivated(self,reason):
@@ -450,12 +452,15 @@ class tipWindow(QtWidgets.QDialog):
         self.setStyleSheet("#tipWindow{border-image:url(./style/AddWindow/background.png) }")
         self.setWindowIcon(QtGui.QIcon("./style/Window/icon.png"))
         self.resize(200, 160)
-        self.move(QApplication.desktop().width()-200, (QApplication.desktop().height()-200)/2)
+        self.loc_wid=QApplication.desktop().width()-200
+        self.loc_hei=(QApplication.desktop().height()-160)/2
+        self.move(self.loc_wid, self.loc_hei)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint|Qt.Tool|QtCore.Qt.WindowStaysOnTopHint)
         self.setFixedSize(self.width(), self.height()); 
         # self.setWindowOpacity(0.5)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
-
+        
+        color = self.catch()        
         ft = QtGui.QFont()
         ft.setFamily('Consolas')
         ft.setBold(True) 
@@ -463,7 +468,7 @@ class tipWindow(QtWidgets.QDialog):
         ft.setWeight(75) 
         self.quitbutton = QPushButton(self)             # 退出tip
         self.quitbutton.setGeometry(QtCore.QRect(180, 0, 20, 150))
-        self.quitbutton.setStyleSheet('''background-color:transparent; color:white; border-radius:12px;''')
+        self.quitbutton.setStyleSheet('''background-color:transparent; color:{c}; border-radius:12px;'''.format(c=color))
         self.quitbutton.clicked.connect(self.quit)
         self.quitbutton.setText("点\n击\n右\n侧\n退\n出")
 
@@ -471,19 +476,19 @@ class tipWindow(QtWidgets.QDialog):
         self.word.setGeometry(QtCore.QRect(0, 20, 180, 30))
         self.word.setText(w.thisword.enWord)
         self.word.setAlignment(QtCore.Qt.AlignCenter)
-        self.word.setStyleSheet('''color:white;''')
+        self.word.setStyleSheet('''color:{c};'''.format(c=color))
         self.word.setFont(ft)
 
         self.pronunciation = QtWidgets.QPushButton(self)    # 发音
         self.pronunciation.setGeometry(QtCore.QRect(90, 85, 20, 20))
-        self.pronunciation.setStyleSheet('''border-image:url(./style/RemWindow/pronunciation.png); border-radius:12px;''')
+        self.pronunciation.setStyleSheet('''border-image:url(./style/RemWindow/pronunciation.png);border-radius:12px;''')
         self.pronunciation.clicked.connect(w.pronunciation)
 
         self.phonetic = QLabel(self)            # 音标
         self.phonetic.setGeometry(QtCore.QRect(0, 50, 180, 30))
         self.phonetic.setText(w.thisword.phonetic)
         self.phonetic.setAlignment(QtCore.Qt.AlignCenter)
-        self.phonetic.setStyleSheet('''color:white;''')
+        self.phonetic.setStyleSheet('''color:{c};'''.format(c=color))
         self.phonetic.setFont(ft)
 
         ft2 = QtGui.QFont()
@@ -497,7 +502,7 @@ class tipWindow(QtWidgets.QDialog):
         self.translation.setWordWrap(True)
         self.translation.setAlignment(QtCore.Qt.AlignCenter)
         self.translation.setFont(ft2)
-        self.translation.setStyleSheet('''background-color:transparent; color:white; border:none;''')
+        self.translation.setStyleSheet('''background-color:transparent; color:{c}; border:none;'''.format(c=color))
 
         self.flag = True
         self.func2 = threading.Thread(target=self.nextword)
@@ -517,9 +522,32 @@ class tipWindow(QtWidgets.QDialog):
         while self.flag:
             time.sleep(5)
             w.nextword()
+            self.changecolor()
             self.word.setText(w.thisword.enWord)
             self.phonetic.setText(w.thisword.phonetic)
             self.translation.setText(w.thisword.cnTranslation)
+
+    def changecolor(self):
+        color = self.catch()
+        self.quitbutton.setStyleSheet('''background-color:transparent; color:{c}; border-radius:12px;'''.format(c=color))
+        self.word.setStyleSheet('''color:{c};'''.format(c=color))
+        self.phonetic.setStyleSheet('''color:{c};'''.format(c=color))
+        self.translation.setStyleSheet('''background-color:transparent; color:{c}; border:none;'''.format(c=color))
+
+    def catch(self):
+        x = self.loc_wid+100
+        y = self.loc_hei+80
+        pixmap = QtGui.QGuiApplication.primaryScreen().grabWindow(QApplication.desktop().winId(), x, y, 1, 1)
+        if not pixmap.isNull():
+            image = pixmap.toImage()
+            if not image.isNull():
+                if (image.valid(0, 0)):
+                    color = QtGui.QColor(image.pixel(0, 0))
+                    r, g, b, _ = color.getRgb()
+                    # self.nowColor = color
+                    return '#'+hex(255-r)[2:]+hex(255-g)[2:]+hex(255-b)[2:]
+                    # self.ui.lineEditMove.setText('(%d, %d, %d) %s' % (r, g, b, color.name().upper()))
+                    # self.ui.lineEditMove.setStyleSheet('QLineEdit{border:2px solid %s;}' % (color.name()))
 
 if __name__=='__main__':
     w = wordlist()
