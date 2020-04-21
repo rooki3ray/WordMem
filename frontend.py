@@ -506,6 +506,7 @@ class tipWindow(QtWidgets.QDialog):
 
         self.flag = True
         self.func2 = threading.Thread(target=self.nextword)
+        self.func2.setDaemon(True)
         self.func2.start()
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
