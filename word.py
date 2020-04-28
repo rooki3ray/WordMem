@@ -1,3 +1,4 @@
+#-*-coding:utf-8-*-
 class Word:
 
     def __init__(self, id, enword, cntranslation, phonetic='', testedcount=0, correctcount=0, lasttime=0, finished=0):
@@ -9,9 +10,6 @@ class Word:
         self.correctCount = correctcount
         self.lastTime = lasttime
         self.finished = finished
-
-    def change_explanation(self, newtranslation):
-        self.cnTranslation = newtranslation
 
     def is_phrase(self):
         k = self.enWord.split(' ')

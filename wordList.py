@@ -1,6 +1,6 @@
 #-*-coding:utf-8-*-
 import sqlite3
-import numpy as np
+from numpy import random
 import time
 from word import Word
 import os
@@ -113,7 +113,7 @@ class wordlist:
                 self.todayList.append(i)
         else:
             rem = int(self.target*0.4)
-            for i in np.random.choice(self.rememberList, size=rem, replace=False, p=None):  # 随机选取已记忆列表中的单词
+            for i in random.choice(self.rememberList, size=rem, replace=False, p=None):  # 随机选取已记忆列表中的单词
                 self.todayList.append(i)
 
         unk = self.target - rem
@@ -121,7 +121,7 @@ class wordlist:
             for i in self.unknownList:
                 self.todayList.append(i)
         elif len(self.unknownList) >= unk:
-            for i in np.random.choice(self.unknownList, size=unk, replace=False, p=None):   # 随机选取未记忆列表中的单词
+            for i in random.choice(self.unknownList, size=unk, replace=False, p=None):   # 随机选取未记忆列表中的单词
                 self.todayList.append(i)
         else:
             pass
@@ -132,7 +132,7 @@ class wordlist:
 
     def nextword(self):     # 选择当前目标单词
         try:
-            self.thisword = np.random.choice(self.todayunknownList, size=1, replace=False, p=None)[0]   # 随机选取今日未记忆列表中的单词
+            self.thisword = random.choice(self.todayunknownList, size=1, replace=False, p=None)[0]   # 随机选取今日未记忆列表中的单词
         except ValueError:
             return True
         else:

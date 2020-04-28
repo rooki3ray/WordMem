@@ -7,5 +7,5 @@ echart/
 frontend/
 dist/
 test.py
-*.exe
+
 md/
