@@ -1,3 +1,5 @@
+#-*-coding:utf-8-*-
+
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar, QPushButton, QLabel, QSystemTrayIcon, QMenu, QAction
@@ -10,7 +12,7 @@ import ctypes
 import threading
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("WordMem")
 
-class MainWindow(QtWidgets.QDialog):
+class MainWindow(QtWidgets.QDialog):        #主窗口
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi()
@@ -33,7 +35,7 @@ class MainWindow(QtWidgets.QDialog):
         self.closeButton.clicked.connect(self.closeEvent)
         self.closeButton.setStyleSheet('''border-image:url(./style/Window/close.png); border-radius:12px;''')  
 
-        self.deButton = QtWidgets.QPushButton(self)        
+        self.deButton = QtWidgets.QPushButton(self)      # 默认空按钮，避免回车激活其他按钮
         self.deButton.setGeometry(QtCore.QRect(0, 0, 0, 0))
         self.deButton.setDefault(True)
 
@@ -49,7 +51,6 @@ class MainWindow(QtWidgets.QDialog):
         self.beginButton.clicked.connect(self.beginButtonClicked)
         self.beginButton.setFont(ft)
         self.beginButton.setStyleSheet('''background:#6DDF6D;border-radius:5px;''')
-
 
         self.addButton = QtWidgets.QPushButton(self)      # 添加按钮
         self.addButton.setGeometry(QtCore.QRect(110, 390, 220, 50))
@@ -123,7 +124,7 @@ class MainWindow(QtWidgets.QDialog):
         self.addButton.setText(_translate("addButton", "查询/添加单词"))
         self.tipButton.setText(_translate("infoButton", "Tip 形 式"))
 
-     #界面上关闭按钮
+    #界面上关闭按钮
     def closeEvent(self, event):
         # event.ignore()  # 忽略关闭事件
         self.hide()  # 隐藏窗体
@@ -135,12 +136,12 @@ class MainWindow(QtWidgets.QDialog):
             pass
         app.exit()
          
-    def iconActivated(self,reason):
-            if reason == QSystemTrayIcon.DoubleClick:
-                if self.isHidden():
-                    self.show()
-                else:
-                    self.hide()
+    def iconActivated(self, reason):  # 托盘图标点击处理
+        if reason == QSystemTrayIcon.DoubleClick:   # 双击处理
+            if self.isHidden():
+                self.show()
+            else:
+                self.hide()
 
     def beginButtonClicked(self):
         self.rememberWindow = rememberWindow()
@@ -155,7 +156,7 @@ class MainWindow(QtWidgets.QDialog):
         self.tipWindow = tipWindow()
         self.tipWindow.show()
 
-class rememberWindow(QtWidgets.QDialog):
+class rememberWindow(QtWidgets.QDialog):    # 单词记忆窗口
     def __init__(self):
         super(rememberWindow, self).__init__()
         self.setupUi()
@@ -178,7 +179,7 @@ class rememberWindow(QtWidgets.QDialog):
         self.closeButton.clicked.connect(self.close)
         self.closeButton.setStyleSheet('''border-image:url(./style/Window/close.png); border-radius:12px;''')  
         
-        self.deButton = QtWidgets.QPushButton(self)        
+        self.deButton = QtWidgets.QPushButton(self)      # 默认空按钮，避免回车激活其他按钮 
         self.deButton.setGeometry(QtCore.QRect(0, 0, 0, 0))
         self.deButton.setDefault(True)
 
@@ -197,7 +198,7 @@ class rememberWindow(QtWidgets.QDialog):
         self.pronunciation = QtWidgets.QPushButton(self)    # 发音
         self.pronunciation.setGeometry(QtCore.QRect(215, 125, 20, 20))
         self.pronunciation.setStyleSheet('''border-image:url(./style/RemWindow/pronunciation.png); border-radius:12px;''')
-        self.pronunciation.clicked.connect(w.pronunciation)
+        self.pronunciation.clicked.connect(w.pronunciation) # 播放发音
 
         self.phonetic = QLabel(self)            # 音标
         self.phonetic.setGeometry(QtCore.QRect(35, 80, 380, 40))
@@ -219,7 +220,7 @@ class rememberWindow(QtWidgets.QDialog):
         self.transButton.setFont(ft2)
         self.transButton.setStyleSheet('''background-color:transparent; color:white; border:none;''')
         # self.transButton.setGraphicsEffect(op)
-        self.flag=0
+        self.flag=0     # 记录按钮状态
         # self.transButton.setStyleSheet("border-image:url(./images/style/MyChat/sendtxtbutton.png);")
     
         self.remButton = QtWidgets.QPushButton(self)        # 认识按钮
@@ -244,7 +245,7 @@ class rememberWindow(QtWidgets.QDialog):
         ft2.setPointSize(8)
         self.p.setFont(ft2)
 
-        self.pbar = QProgressBar(self)                      
+        self.pbar = QProgressBar(self)     # 进度条
         self.pbar.setGeometry(QtCore.QRect(110, 570, 340, 15))
         self.pbar.setValue(len(w.todayrememberList)/len(w.todayList)*100)
 
@@ -258,8 +259,8 @@ class rememberWindow(QtWidgets.QDialog):
         self.remButton.setText(_translate("rememberButton", '认识'))
         self.nremButton.setText(_translate("notrememberButton", '不认识'))
 
-    def transButtonClicked(self):
-        if self.flag==0:
+    def transButtonClicked(self):   # 释义按钮状态切换
+        if self.flag==0:   #flag用以记录按钮状态 
             self.flag = 1
             self.transButton.setText(w.thisword.cnTranslation)
         else:
@@ -273,17 +274,19 @@ class rememberWindow(QtWidgets.QDialog):
         else:
             self.word.setText(w.thisword.enWord)
             self.transButton.setText('点击屏幕显示释义')
+            self.flag=0
         self.pbar.setValue(len(w.todayrememberList)/len(w.todayList)*100)
-        self.p.setText('今日进度：'+str(len(w.todayrememberList))+"/"+str(len(w.todayList)))
+        self.p.setText('今日进度:'+str(len(w.todayrememberList))+"/"+str(len(w.todayList)))
 
     def nremButtonClicked(self):
         w.IDonotRemember()
         self.word.setText(w.thisword.enWord)
         self.transButton.setText('点击屏幕显示释义')
+        self.flag=0
         self.pbar.setValue(len(w.todayrememberList)/len(w.todayList)*100)
         self.p.setText('今日进度:'+str(len(w.todayrememberList))+"/"+str(len(w.todayList)))
     
-class EmittingStream(QtCore.QObject):
+class EmittingStream(QtCore.QObject):   # 用于输出重定向
         textWritten = QtCore.pyqtSignal(str)
         def write(self, text):
             self.textWritten.emit(str(text))
@@ -292,8 +295,8 @@ class addWindow(QtWidgets.QDialog):
     def __init__(self):
         super(addWindow, self).__init__()
         self.setupUi()
-        sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
-        sys.stderr = EmittingStream(textWritten=self.normalOutputWritten)
+        sys.stdout = EmittingStream(textWritten=self.normalOutputWritten) # 用于输出重定向
+        sys.stderr = EmittingStream(textWritten=self.normalOutputWritten) # 用于输出重定向
 
     def setupUi(self):
         self.setObjectName("addWindow")
@@ -313,7 +316,7 @@ class addWindow(QtWidgets.QDialog):
         self.closeButton.clicked.connect(self.close)
         self.closeButton.setStyleSheet('''border-image:url(./style/Window/close.png); border-radius:12px;''')  
 
-        self.deButton = QtWidgets.QPushButton(self)        
+        self.deButton = QtWidgets.QPushButton(self)       # 默认空按钮，避免回车激活其他按钮   
         self.deButton.setGeometry(QtCore.QRect(0, 0, 0, 0))
         self.deButton.setDefault(True)
         ft = QtGui.QFont()
@@ -400,7 +403,7 @@ class addWindow(QtWidgets.QDialog):
         self.searchButton.setText(_translate("searchButton", "搜 索"))
         self.addButton.setText(_translate("addButton", "添加单词"))
 
-    def normalOutputWritten(self, text):
+    def normalOutputWritten(self, text):    # 输出重定向
         cursor = self.log.textCursor()
         cursor.movePosition(QtGui.QTextCursor.End)
         cursor.insertText(text)
@@ -412,10 +415,10 @@ class addWindow(QtWidgets.QDialog):
         if wd == '':
             pass
         else:
-            result = w.fuzzsearch(wd)
+            result = w.fuzzsearch(wd)   # 模糊查询得到结果
             count = self.tableWidget.rowCount()+1
             for i in range(count):
-                self.tableWidget.removeRow(0)
+                self.tableWidget.removeRow(0)   # 清空表格
             if len(result)==0:
                 print('[INFO] 查询失败!单词库中没有相似单词!')
             else:
@@ -439,7 +442,7 @@ class addWindow(QtWidgets.QDialog):
         cn = w.update_db(en_word=enword, cn_word=cnword, mode='add')
         self.addCnword.setText(cn)
 
-class tipWindow(QtWidgets.QDialog):
+class tipWindow(QtWidgets.QDialog):     # Tip浮窗模式窗口
     def __init__(self):
         super(tipWindow, self).__init__()
         self.setupUi()
@@ -482,7 +485,7 @@ class tipWindow(QtWidgets.QDialog):
         self.pronunciation = QtWidgets.QPushButton(self)    # 发音
         self.pronunciation.setGeometry(QtCore.QRect(90, 85, 20, 20))
         self.pronunciation.setStyleSheet('''border-image:url(./style/RemWindow/pronunciation.png);border-radius:12px;''')
-        self.pronunciation.clicked.connect(w.pronunciation)
+        self.pronunciation.clicked.connect(w.pronunciation) # 播放发音
 
         self.phonetic = QLabel(self)            # 音标
         self.phonetic.setGeometry(QtCore.QRect(0, 50, 180, 30))
@@ -505,9 +508,9 @@ class tipWindow(QtWidgets.QDialog):
         self.translation.setStyleSheet('''background-color:transparent; color:{c}; border:none;'''.format(c=color))
 
         self.flag = True
-        self.func2 = threading.Thread(target=self.nextword)
-        self.func2.setDaemon(True)
-        self.func2.start()
+        self.func = threading.Thread(target=self.nextword)  # 定时切换单词的线程
+        self.func.setDaemon(True)
+        self.func.start()
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -519,7 +522,7 @@ class tipWindow(QtWidgets.QDialog):
         self.flag = False
         self.close()
 
-    def nextword(self):
+    def nextword(self):     # 定时切换单词
         while self.flag:
             time.sleep(5)
             w.nextword()
@@ -528,14 +531,14 @@ class tipWindow(QtWidgets.QDialog):
             self.phonetic.setText(w.thisword.phonetic)
             self.translation.setText(w.thisword.cnTranslation)
 
-    def changecolor(self):
+    def changecolor(self):      # 字体自适应变色
         color = self.catch()
         self.quitbutton.setStyleSheet('''background-color:transparent; color:{c}; border-radius:12px;'''.format(c=color))
         self.word.setStyleSheet('''color:{c};'''.format(c=color))
         self.phonetic.setStyleSheet('''color:{c};'''.format(c=color))
         self.translation.setStyleSheet('''background-color:transparent; color:{c}; border:none;'''.format(c=color))
 
-    def catch(self):
+    def catch(self):        # 自动抓取浮窗中央颜色，并返回其反色(十六进制)
         x = self.loc_wid+100
         y = self.loc_hei+80
         pixmap = QtGui.QGuiApplication.primaryScreen().grabWindow(QApplication.desktop().winId(), x, y, 1, 1)

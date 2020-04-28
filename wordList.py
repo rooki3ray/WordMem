@@ -1,3 +1,4 @@
+#-*-coding:utf-8-*-
 import sqlite3
 import numpy as np
 import time
@@ -29,7 +30,7 @@ class wordlist:
         self.arrange_todaylist()
         self.nextword()
 
-    def read_wordlist_from_file(self):
+    def read_wordlist_from_file(self):      # 无db文件时，从文件中读取词库
         wordid = []
         word = []
         translation = []
@@ -44,7 +45,7 @@ class wordlist:
             print("No Such File!")
         d = []
         for i in wordid:
-            p = self.get_from_youdao(en=word[i-1],mode='p')
+            p = self.get_from_youdao(en=word[i-1],mode='p')     # 获取该单词的音标
             singleword = Word(id=i, enword=word[i-1], cntranslation=translation[i-1], phonetic=p)
             # print(p, i)
             # if p==None:
@@ -57,7 +58,7 @@ class wordlist:
             else:
                 self.unknownList.append(i)
 
-    def create_sql(self):
+    def create_sql(self):       # 创建数据库的db文件
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
         cursor.execute("""CREATE TABLE IF NOT EXISTS wordlist (
@@ -82,7 +83,7 @@ class wordlist:
                 print(word.enWord, word.phonetic)
         db.close()
 
-    def read_from_sql(self):
+    def read_from_sql(self):    # 从db文件中读取词库
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
         r = cursor.execute("""SELECT * FROM wordlist""")
@@ -103,7 +104,7 @@ class wordlist:
     def __len__(self):
         return len(self.wordList)
 
-    def arrange_todaylist(self):
+    def arrange_todaylist(self):    # 安排今日单词库
         if len(self.rememberList) == 0:
             rem = 0
         elif len(self.rememberList) < self.target*0.4:
@@ -112,7 +113,7 @@ class wordlist:
                 self.todayList.append(i)
         else:
             rem = int(self.target*0.4)
-            for i in np.random.choice(self.rememberList, size=rem, replace=False, p=None):
+            for i in np.random.choice(self.rememberList, size=rem, replace=False, p=None):  # 随机选取已记忆列表中的单词
                 self.todayList.append(i)
 
         unk = self.target - rem
@@ -120,7 +121,7 @@ class wordlist:
             for i in self.unknownList:
                 self.todayList.append(i)
         elif len(self.unknownList) >= unk:
-            for i in np.random.choice(self.unknownList, size=unk, replace=False, p=None):
+            for i in np.random.choice(self.unknownList, size=unk, replace=False, p=None):   # 随机选取未记忆列表中的单词
                 self.todayList.append(i)
         else:
             pass
@@ -129,53 +130,52 @@ class wordlist:
             i.correctCount = 0
             self.todayunknownList.append(i)
 
-    def nextword(self):
+    def nextword(self):     # 选择当前目标单词
         try:
-            self.thisword = np.random.choice(self.todayunknownList, size=1, replace=False, p=None)[0]
+            self.thisword = np.random.choice(self.todayunknownList, size=1, replace=False, p=None)[0]   # 随机选取今日未记忆列表中的单词
         except ValueError:
             return True
         else:
             return False
 
-    def IRemember(self):
+    def IRemember(self):        # 记忆单词时选择认识的处理
         self.thisword.testedCount += 1
         self.thisword.correctCount += 1 
-        for index, i in enumerate(self.todayunknownList):
+        for index, i in enumerate(self.todayunknownList):   # 在单词list中保存记忆情况
             if i.enWord == self.thisword.enWord:
                 self.todayunknownList[index] = self.thisword
                 # print(self.todayunknownList[index].testedCount)
-        if self.thisword.testedCount >= 4 and self.thisword.correctCount/self.thisword.testedCount >= 0.75:
+        if self.thisword.testedCount >= 4 and self.thisword.correctCount/self.thisword.testedCount >= 0.75: # 判断是否达到记忆标准
             if self.thisword in self.todayunknownList: 
                 self.todayunknownList.remove(self.thisword)
             if self.thisword not in self.todayrememberList: 
                 self.todayrememberList.append(self.thisword)
-            self.update_db(word=self.thisword, mode='update')
+            self.update_db(word=self.thisword, mode='update')   # 更新数据库
         return self.nextword()
     
-    def IDonotRemember(self):
+    def IDonotRemember(self):   # 记忆单词时选择不认识的处理
         self.thisword.testedCount +=1
-        for index, i in enumerate(self.todayunknownList):
+        for index, i in enumerate(self.todayunknownList):       # 在单词list中保存记忆情况
             if i.enWord == self.thisword.enWord:
                 self.todayunknownList[index] = self.thisword
         return self.nextword()
 
-    def update_db(self, word=None, en_word='', cn_word='', mode=''):
+    def update_db(self, word=None, en_word='', cn_word='', mode=''):    # 对数据库进行添加/更新操作
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
-        if mode=='update':
+        if mode=='update':      # 更新数据库中单词的完成次数
             try:
-                # print("""UPDATE wordlist SET LASTTIME = '{t}', FINISHED = FINISHED + 1 WHERE ENGLISH = '{wd}'""".format(t=time.ctime(), wd=word.enWord))
                 cursor.execute("""UPDATE wordlist SET LASTTIME = '{t}', FINISHED = FINISHED + 1 WHERE ENGLISH = '{wd}'""".format(t=time.ctime(), wd=word.enWord))
                 db.commit()
             except:
                 db.rollback()
                 print("[ERROR] 发生错误!数据库已回滚!", end=' ')
                 print(word)
-        elif mode=='add':
+        elif mode=='add':       # 向数据库中添加新的单词
             if en_word=='':
                 print('[INFO] 请检查是否完整输入!')
                 return
-            else:
+            else:   # 只输入英文时，到网络上匹配，相当于查询功能
                 if en_word.isalpha() and cn_word=='':
                     cn = self.get_from_youdao(en=en_word, mode='c')
                     print('[INFO] 请检查是否完整输入!', end='')
@@ -203,8 +203,8 @@ class wordlist:
                 return
             # r = cursor.execute("""SELECT TOP * FROM wordlist ORDER BY begin_date DESC""")
             # result = r.fetchall()
-            p = self.get_from_youdao(en=en_word, mode='p')
-            self.proun_download(en_word)
+            p = self.get_from_youdao(en=en_word, mode='p')  # 下载音标
+            self.proun_download(en_word)                    # 下载发音文件
             newWord = Word(id=len(self.wordList)+1, enword=en_word.strip(), cntranslation=cn_word, phonetic=p)
             self.wordList.append(newWord)
             self.unknownList.append(newWord)
@@ -216,7 +216,7 @@ class wordlist:
             print(" 录入时间：",time.ctime())
         db.close()
 
-    def search(self, en_word):
+    def search(self, en_word):          # 精准搜素
         db = sqlite3.connect(self.dbname)
         cursor = db.cursor()
         r = cursor.execute("""select * from wordlist where ENGLISH  = '{ew}'""".format(ew=en_word))
@@ -226,7 +226,7 @@ class wordlist:
         else:
             return []
 
-    def fuzzsearch(self, en_word):
+    def fuzzsearch(self, en_word):      # 模糊搜索
         try:
             db = sqlite3.connect(self.dbname)
         except AttributeError:
@@ -244,12 +244,12 @@ class wordlist:
         self.wordList = sorted(self.wordList, key=lambda x: x.enWord[0])
         return self.wordList
 
-    def proun_download(self, enword):
+    def proun_download(self, enword):       # 下载发音文件
         img_url = 'https://fanyi.baidu.com/gettts?lan=uk&text='+enword+'&spd=3&source=web'
         wget.download(img_url ,"pronunciation\\"+enword+".mp3")
         print("[INFO] ")
 
-    def pronunciation(self):
+    def pronunciation(self):    # 播放发音文件
         musicPath = "pronunciation\\"+self.thisword.enWord+".mp3"
         pygame.mixer.init()#初始化
         track = pygame.mixer.music.load(musicPath)#加载音乐
@@ -257,7 +257,7 @@ class wordlist:
         time.sleep(1)#表示音频的长度
         pygame.mixer.music.stop()
 
-    def get_from_youdao(self, en='', cn='', mode='p'):
+    def get_from_youdao(self, en='', cn='', mode='p'):  # 从有道翻译获取释义/音标
         en = en.replace(" ","_")
         phoneticSpelling = ""
         #url的格式有规律
@@ -304,28 +304,3 @@ class wordlist:
 
 if __name__ == '__main__':
     a=wordlist()
-
-    # print(a.thisword.enWord)
-    # print(len(a.todayunknownList))
-
-    # for i in a.todayList:
-    #     print(i.enWord, i.testedCount)
-    # print(a.fuzzsearch('memo'))
-    # print(a.thisword.correctCount)
-    # print(len(a.todayunknownList))
-    # print(len(a.todayList))
-
-    # print(a.thisword.enWord)
-    
-    # for i in a.todayunknownList:
-    #     b = b+1
-    #     print(i.enWord)
-    # print(len(a.unknownList))
-    # c=np.random.choice(a.wordList, size=2, replace=False, p=None)
-    # print(c)
-    # d=[]
-    # for i in c:
-    #     d.append(i)
-    # print(d)
-
-    

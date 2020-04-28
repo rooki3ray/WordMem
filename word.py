@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 class Word:
 
     def __init__(self, id, enword, cntranslation, phonetic='', testedcount=0, correctcount=0, lasttime=0, finished=0):

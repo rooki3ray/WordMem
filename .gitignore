@@ -2,11 +2,10 @@ __pycache__/
 .idea/
 .vscode/
 styleedit/
-version.md
 wordlist - 副本.db
-phonetic.py
 echart/
 frontend/
 dist/
 test.py
-WordMem.exe
+*.exe
+md/
