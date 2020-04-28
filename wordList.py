@@ -212,7 +212,7 @@ class wordlist:
                                 VALUES ({i}, '{ew}', '{ct}', '{ph}', '{lt}', {f})""".format(
                                 i=newWord.id, ew=newWord.enWord, ct=newWord.cnTranslation, ph=p, lt=newWord.lastTime, f=newWord.finished))
             db.commit()
-            print("[INFO] [+en_word+', '+p+', '+cn_word+] 已经添加!", end='')
+            print("[INFO] ["+en_word+', '+p+', '+cn_word+"] 已经添加!", end='')
             print(" 录入时间：",time.ctime())
         db.close()
 
